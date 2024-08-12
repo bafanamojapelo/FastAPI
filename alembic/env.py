@@ -11,7 +11,7 @@ config = context.config
 # Set the database URL from environment variables or settings
 config.set_main_option(
     "sqlalchemy.url",
-    f"postgresql+psycopg2://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
+    f"postgresql+psycopg2://postgres:Bafana1992@localhost:5432/fastapi"
 )
 
 # Setup logging
