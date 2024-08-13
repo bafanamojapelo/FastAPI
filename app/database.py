@@ -7,29 +7,25 @@ from .config import settings
 # URL-encode the password if it contains special characters
 encoded_password = quote_plus(settings.database_password)
 
-# Use the URL-encoded password in the connection string
-SQLALCHEMY_DATABASE_URL = f'postgresql://{settings.database_username}:{encoded_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}'
+# Construct the SQLAlchemy database URL using encoded password
+SQLALCHEMY_DATABASE_URL = (
+    f'postgresql://{settings.database_username}:{encoded_password}@'
+    f'{settings.database_hostname}:{settings.database_port}/{settings.database_name}'
+)
 
+# Create the SQLAlchemy engine
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
+# Create a configured "Session" class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+# Create a base class for declarative models
 Base = declarative_base()
 
+# Dependency to get DB session
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
-# Uncomment and use this section only if you need direct psycopg2 connection
-# while True:
-#     try:
-#         conn = psycopg2.connect(host='localhost', database='fastapi', user='postgres', password='(Bafana@1992)', cursor_factory= RealDictCursor)
-#         cursor = conn.cursor()
-#         print("Database connection was successful!")
-#         break
-#     except Exception as error:
-#         print("Connecting to Database failed")
-#         print("Error", error)
-#         time.sleep(2)
