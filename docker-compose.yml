@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   api:
     build: .
@@ -8,3 +6,4 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
+    restart: always  # This will restart the container if it exits
