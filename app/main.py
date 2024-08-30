@@ -26,6 +26,11 @@ app.include_router(auth.router)
 app.include_router(vote.router)
 
 
+
+from fastapi import FastAPI
+
+app = FastAPI()
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
