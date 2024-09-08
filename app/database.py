@@ -7,7 +7,7 @@ from .config import settings
 # URL-encode the password if it contains special characters
 encoded_password = quote_plus(settings.database_password)
 
-# Construct the SQLAlchemy database URL using encoded password
+# Construct the SQLAlchemy database URL using the encoded password
 SQLALCHEMY_DATABASE_URL = (
     f'postgresql://{settings.database_username}:{encoded_password}@'
     f'{settings.database_hostname}:{settings.database_port}/{settings.database_name}'
