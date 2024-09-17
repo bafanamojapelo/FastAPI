@@ -52,6 +52,7 @@ jobs:
       - name: Create test database
         run: |
           sudo apt-get install postgresql-client
+          export PGPASSWORD=$database_password
           psql -h localhost -U postgres -c "CREATE DATABASE fastapi_test;"
 
       - name: Run tests with pytest
