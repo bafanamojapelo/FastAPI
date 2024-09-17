@@ -10,7 +10,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: Bafana1992
-          POSTGRES_DB: test_db
+          POSTGRES_DB: fastapi_test_test  # Ensure this matches your test database name
         ports:
           - 5432:5432
         options: >-
@@ -25,11 +25,11 @@ jobs:
       database_port: "5432"
       database_username: "postgres"
       database_password: "Bafana1992"
-      database_name: "fastapi_test"  # Corrected to match your test database name
+      database_name: "fastapi_test_test"  # Updated to match your test database name
       secret_key: "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
       algorithm: "HS256"
       access_token_expire_minutes: "30"
-      database_url: "postgresql://postgres:Bafana1992@localhost:5432/test_db"
+      database_url: "postgresql://postgres:Bafana1992@localhost:5432/fastapi_test_test"
 
     steps:
       - name: Checkout repository
@@ -48,6 +48,12 @@ jobs:
 
       - name: Install httpx
         run: pip install httpx
+
+      - name: Initialize database
+        run: |
+          # Add any necessary commands to set up your database schema here
+          # For example, you might need to run migrations
+          # python manage.py migrate
 
       - name: Run tests with pytest
         run: |
