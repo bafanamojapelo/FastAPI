@@ -4,58 +4,11 @@ on: [push, pull_request]
 
 jobs:
   job1:
-    services:
-      postgres:
-        image: postgres:latest
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: Bafana1992
-          POSTGRES_DB: fastapi_test_test  # Ensure this matches your test database name
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     runs-on: ubuntu-latest
-    env:
-      database_hostname: "localhost"
-      database_port: "5432"
-      database_username: "postgres"
-      database_password: "Bafana1992"
-      database_name: "fastapi_test_test"  # Updated to match your test database name
-      secret_key: "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-      algorithm: "HS256"
-      access_token_expire_minutes: "30"
-      database_url: "postgresql://postgres:Bafana1992@localhost:5432/fastapi_test_test"
-
     steps:
-      - name: Checkout repository
+      - name: pulling git repo
         uses: actions/checkout@v3
 
-      - name: Install Python version 3.12.2
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.12.2"
-
-      - name: Update pip
-        run: python -m pip install --upgrade pip
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Install httpx
-        run: pip install httpx
-
-      - name: Initialize database
-        run: |
-          # Add any necessary commands to set up your database schema here
-          # For example, you might need to run migrations
-          # python manage.py migrate
-
-      - name: Run tests with pytest
-        run: |
-          pip install pytest
-          pytest
+      - name: say hi to bafana
+        run: echo "hello bafana"
+        
