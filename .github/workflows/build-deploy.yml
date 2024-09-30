@@ -50,6 +50,11 @@ jobs:
       - name: install httpx
         run: pip install httpx
 
+      - name: Set up test database
+        run: |
+          psql -U postgres -c "CREATE DATABASE your_test_database_name;"
+          psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE your_test_database_name TO postgres;"
+      
       - name: test with pytest
         run: |
           pip install pytest
