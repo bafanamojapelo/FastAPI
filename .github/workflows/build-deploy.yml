@@ -9,7 +9,7 @@ jobs:
       DATABASE_PORT: 5432
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: Bafana1992
-      DATABASE_NAME: fastapi_test  # Update this to use fastapi_test
+      DATABASE_NAME: fastapi_test
       SECRET_KEY: 09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
       ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 300
@@ -23,7 +23,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: Bafana1992
-          POSTGRES_DB: fastapi  # This can remain if you want to use a default database
+          POSTGRES_DB: fastapi
         ports:
           - 5432:5432
         options: >-
@@ -33,21 +33,29 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: pulling git repo
+      - name: Pulling git repo
         uses: actions/checkout@v3
 
-      - name: install python version 3.9
+      - name: Cache Python packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python version 3.9
         uses: actions/setup-python@v3
         with:
           python-version: "3.9"
 
-      - name: update pip
+      - name: Update pip
         run: python -m pip install --upgrade pip
 
-      - name: install all dependencies
+      - name: Install all dependencies
         run: pip install -r requirements.txt
 
-      - name: create fastapi_test database
+      - name: Create fastapi_test database
         run: |
           until psql -U postgres -c '\l'; do
             echo "Waiting for PostgreSQL..."
@@ -55,7 +63,7 @@ jobs:
           done
           psql -U postgres -c 'CREATE DATABASE fastapi_test;'
 
-      - name: test with pytest
+      - name: Test with pytest
         run: |
           pip install pytest
-          pytest
+          pytest --disable-warnings -q
