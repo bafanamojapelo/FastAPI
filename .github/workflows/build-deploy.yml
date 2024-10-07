@@ -27,9 +27,9 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U postgres" 
-          --health-interval 10s 
-          --health-timeout 5s 
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
           --health-retries 5
 
     steps:
@@ -38,7 +38,7 @@ jobs:
 
       - name: install python version 3.9
         uses: actions/setup-python@v3
-        with: 
+        with:
           python-version: "3.9"
 
       - name: update pip
@@ -46,6 +46,9 @@ jobs:
 
       - name: install all dependencies
         run: pip install -r requirements.txt
+
+      - name: install httpx
+        run: pip install httpx
 
       - name: test with pytest
         run: |
