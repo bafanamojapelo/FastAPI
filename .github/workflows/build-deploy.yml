@@ -50,10 +50,25 @@ jobs:
       - name: install httpx
         run: pip install httpx
 
-      - name: Set up test database
+      - name: Wait for PostgreSQL to be ready
         run: |
-          psql -U postgres -c "CREATE DATABASE your_test_database_name;"
-          psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE your_test_database_name TO postgres;"
+          for i in {1..10}; do
+            pg_isready -h localhost -p 5432
+            if [ $? -eq 0 ]; then
+              echo "Postgres is ready"
+              break
+            else
+              echo "Waiting for Postgres..."
+              sleep 5
+            fi
+          done
+
+      - name: Set up test database
+        env:
+          PGPASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+        run: |
+          psql -h localhost -U postgres -p 5432 -c "CREATE DATABASE your_test_database_name;"
+          psql -h localhost -U postgres -p 5432 -c "GRANT ALL PRIVILEGES ON DATABASE your_test_database_name TO postgres;"
       
       - name: test with pytest
         run: |
