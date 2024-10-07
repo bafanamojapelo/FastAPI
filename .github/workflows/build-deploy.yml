@@ -15,7 +15,8 @@ jobs:
       SECRET_KEY: ${{secrets.SECRET_KEY}}
       ALGORITHM: ${{secrets.ALGORITHM}}
       ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL: postgres://postgres:${{secrets.DATABASE_PASSWORD}}@localhost:5432/${{secrets.DATABASE_NAME}}_test
+
 
     services:
       postgres:
@@ -64,11 +65,10 @@ jobs:
           done
 
       - name: Set up test database
-        env:
-          PGPASSWORD: ${{ secrets.DATABASE_PASSWORD }}
         run: |
-          psql -h localhost -U postgres -p 5432 -c "CREATE DATABASE your_test_database_name;"
-          psql -h localhost -U postgres -p 5432 -c "GRANT ALL PRIVILEGES ON DATABASE your_test_database_name TO postgres;"
+          psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE ${DATABASE_NAME}_test;"
+          psql -h localhost -p 5432 -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE ${DATABASE_NAME}_test TO postgres;"
+        
       
       - name: test with pytest
         run: |
