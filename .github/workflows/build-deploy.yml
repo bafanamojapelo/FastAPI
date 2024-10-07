@@ -50,26 +50,7 @@ jobs:
 
       - name: install httpx
         run: pip install httpx
-
-      - name: Wait for PostgreSQL to be ready
-        run: |
-          for i in {1..10}; do
-            pg_isready -h localhost -p 5432
-            if [ $? -eq 0 ]; then
-              echo "Postgres is ready"
-              break
-            else
-              echo "Waiting for Postgres..."
-              sleep 5
-            fi
-          done
-
-      - name: Set up test database
-        run: |
-          psql -h localhost -p 5432 -U postgres -c "CREATE DATABASE ${DATABASE_NAME}_test;"
-          psql -h localhost -p 5432 -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE ${DATABASE_NAME}_test TO postgres;"
         
-      
       - name: test with pytest
         run: |
           pip install pytest
