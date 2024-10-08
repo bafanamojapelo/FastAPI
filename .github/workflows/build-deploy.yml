@@ -65,13 +65,14 @@ jobs:
 
       - name: Create fastapi_test database
         env:
-          PGPASSWORD: ${{ secrets.DATABASE_PASSWORD }}
+          PGPASSWORD: ${{ secrets.DATABASE_PASSWORD }}  # Ensure this is correctly set from secrets
         run: |
-          until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do
-            echo "Waiting for PostgreSQL to be ready..."
-            sleep 3
-          done
-          psql -h 127.0.0.1 -U postgres -c 'CREATE DATABASE fastapi_test;'
+            until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do
+              echo "Waiting for PostgreSQL to be ready..."
+              sleep 3
+            done
+            psql -h 127.0.0.1 -U postgres -c 'CREATE DATABASE fastapi_test;'
+        
 
       - name: Test with pytest
         run: |
