@@ -15,10 +15,9 @@ jobs:
       ACCESS_TOKEN_EXPIRE_MINUTES: 300
       DATABASE_URL: postgresql://postgres:Bafana1992@127.0.0.1:5432/fastapi_test
 
-
     runs-on: ubuntu-latest
 
-  services:
+    services:
       postgres:
         image: postgres:13
         env:
@@ -32,8 +31,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
-
-
 
     steps:
       - name: Pulling git repo
@@ -58,13 +55,16 @@ jobs:
       - name: Install all dependencies
         run: pip install -r requirements.txt
 
+      - name: Install PostgreSQL client
+        run: sudo apt-get install postgresql-client
+
       - name: Create fastapi_test database
         run: |
-          until psql -U postgres -c '\l'; do
+          until psql -h 127.0.0.1 -U postgres -c '\l'; do
             echo "Waiting for PostgreSQL..."
             sleep 5
           done
-          psql -U postgres -c 'CREATE DATABASE fastapi_test;'
+          psql -h 127.0.0.1 -U postgres -c 'CREATE DATABASE fastapi_test;'
 
       - name: Test with pytest
         run: |
@@ -73,4 +73,3 @@ jobs:
 
       - name: Check PostgreSQL status
         run: docker ps -a
-        
