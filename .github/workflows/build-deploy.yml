@@ -28,9 +28,9 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
+          --health-interval 5s
           --health-timeout 5s
-          --health-retries 10
+          --health-retries 5
 
     steps:
       - name: Pulling git repo
@@ -58,11 +58,16 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get install postgresql-client
 
+      - name: Set up PostgreSQL password file
+        run: |
+          echo "127.0.0.1:5432:fastapi_test:postgres:Bafana1992" > ~/.pgpass
+          chmod 0600 ~/.pgpass
+
       - name: Create fastapi_test database
         run: |
-          until psql -h 127.0.0.1 -U postgres -c '\l'; do
-            echo "Waiting for PostgreSQL..."
-            sleep 5
+          until pg_isready -h 127.0.0.1 -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL to be ready..."
+            sleep 3
           done
           psql -h 127.0.0.1 -U postgres -c 'CREATE DATABASE fastapi_test;'
 
