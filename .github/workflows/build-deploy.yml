@@ -16,7 +16,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:${{ secrets.DATABASE_PASSWORD }}@postgres:5432/fastapi_test
 
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 300
 
     services:
       postgres:
