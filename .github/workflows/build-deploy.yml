@@ -76,5 +76,8 @@ jobs:
           pip install pytest
           pytest --disable-warnings -q
 
+      - name: Display PostgreSQL container logs
+        run: docker logs $(docker ps -a -q --filter ancestor=postgres)
+
       - name: Check PostgreSQL status
         run: docker ps -a
