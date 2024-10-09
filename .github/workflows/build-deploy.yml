@@ -8,7 +8,7 @@ jobs:
       DATABASE_HOSTNAME: postgres
       DATABASE_PORT: 5432
       DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}  # From GitHub Secrets
+      DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
       DATABASE_NAME: fastapi_test
       SECRET_KEY: 09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7
       ALGORITHM: HS256
@@ -16,7 +16,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:${{ secrets.DATABASE_PASSWORD }}@postgres:5432/fastapi_test
 
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # Increase the timeout
+    timeout-minutes: 30
 
     services:
       postgres:
@@ -26,7 +26,7 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
           POSTGRES_DB: fastapi_test
         ports:
-          - 5433:5432  # Use different host port to avoid conflicts
+          - 5433:5432
         options: >-
           --network my_network
           --cpus="1"
@@ -38,7 +38,11 @@ jobs:
 
     steps:
       - name: Create Docker network
-        run: docker network create my_network
+        run: |
+          docker network create my_network || echo "Network already exists"
+
+      - name: Check existing networks
+        run: docker network ls
 
       - name: Pulling git repo
         uses: actions/checkout@v3
@@ -70,7 +74,7 @@ jobs:
 
       - name: Set up PostgreSQL password file
         run: |
-          echo "postgres:5432:*:postgres:${{ secrets.DATABASE_PASSWORD }}" > ~/.pgpass
+          echo "127.0.0.1:5432:*:postgres:${{ secrets.DATABASE_PASSWORD }}" > ~/.pgpass
           chmod 0600 ~/.pgpass
 
       - name: Create fastapi_test database
