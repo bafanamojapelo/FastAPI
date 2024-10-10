@@ -1,9 +1,13 @@
 name: Build and Deploy Code
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
-  job1:
+  build_and_deploy:
     env:
       DATABASE_HOSTNAME: postgres
       DATABASE_PORT: 5432
@@ -37,15 +41,11 @@ jobs:
           --health-retries 10
 
     steps:
-      - name: Create Docker network
-        run: docker network create my_network
-        
-      - name: Check existing networks
-        run: docker network ls
-
-      - name: Pulling git repo
+      # Step 1: Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Step 2: Cache Python packages
       - name: Cache Python packages
         uses: actions/cache@v3
         with:
@@ -54,25 +54,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
+      # Step 3: Install Python version 3.9
       - name: Install Python version 3.9
         uses: actions/setup-python@v3
         with:
-          python-version: "3.9"
+          python-version: '3.9'
 
+      # Step 4: Update pip
       - name: Update pip
         run: python -m pip install --upgrade pip
 
+      # Step 5: Install all dependencies
       - name: Install all dependencies
         run: pip install -r requirements.txt
 
+      # Step 6: Install PostgreSQL client
       - name: Install PostgreSQL client
         run: sudo apt-get install -y postgresql-client
 
+      # Step 7: Set up PostgreSQL password file
       - name: Set up PostgreSQL password file
         run: |
           echo "127.0.0.1:5432:*:postgres:${{ secrets.DATABASE_PASSWORD }}" > ~/.pgpass
           chmod 0600 ~/.pgpass
 
+      # Step 8: Create fastapi_test database
       - name: Create fastapi_test database
         run: |
           until pg_isready -h postgres -p 5432 -U postgres; do
@@ -81,19 +87,41 @@ jobs:
           done
           psql -h postgres -U postgres -c "CREATE DATABASE ${DATABASE_NAME};"
 
+      # Step 9: Test with pytest
       - name: Test with pytest
         run: |
           pip install pytest
           pytest --disable-warnings -q
 
+      # Step 10: Display PostgreSQL container logs
       - name: Display PostgreSQL container logs
         run: docker logs $(docker ps -a -q --filter "name=postgres")
 
+      # Step 11: Check PostgreSQL status
       - name: Check PostgreSQL status
         run: docker ps -a
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v1
+      # Docker Steps: Moved to the end
+
+      # Step 12: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME}}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN}}
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      # Step 13: Create Docker network
+      - name: Create Docker network
+        run: docker network create my_network
+
+      # Step 14: Build Docker image
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/your-image-name:latest .
+
+      # Step 15: Push Docker image to Docker Hub
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/your-image-name:latest
+
+      # Step 16: Check existing Docker networks
+      - name: Check existing networks
+        run: docker network ls
