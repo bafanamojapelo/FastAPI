@@ -22,6 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 300
 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Create Docker network
+        run: docker network create my_network || echo "Network already exists"
+
     services:
       postgres:
         image: postgres:13
@@ -41,12 +48,6 @@ jobs:
           --health-retries 10
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Create Docker network
-        run: docker network create my_network || echo "Network already exists"
-
       - name: Cache Python packages
         uses: actions/cache@v3
         with:
