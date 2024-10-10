@@ -22,6 +22,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 300
 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Create Docker network
+        run: docker network create my_network || echo "Network already exists"
+
     services:
       postgres:
         image: postgres:13
@@ -41,10 +48,6 @@ jobs:
           --health-retries 10
 
     steps:
-
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
       - name: Cache Python packages
         uses: actions/cache@v3
         with:
@@ -91,15 +94,11 @@ jobs:
       - name: Check PostgreSQL status
         run: docker ps -a
 
-      # Docker Steps moved to the end
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      - name: Create Docker network
-        run: docker network create my_network || echo "Network already exists"
 
       - name: Build Docker image
         run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/your-image-name:latest .
