@@ -139,5 +139,3 @@ jobs:
 
       - name: Check existing Docker networks
         run: docker network ls
-
-      - name: vv
