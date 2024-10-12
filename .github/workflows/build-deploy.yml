@@ -140,6 +140,4 @@ jobs:
       - name: Check existing Docker networks
         run: docker network ls
 
-networks:
-  my_network:
-    driver: bridge
+
