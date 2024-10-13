@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  job1:
+  build-deploy:
     env:
       DATABASE_HOSTNAME: postgres
       DATABASE_PORT: 5432
@@ -23,17 +23,16 @@ jobs:
     timeout-minutes: 300
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Create Docker network
-        run: |
-          docker network create my_network || echo "Network already exists"
+      - name: Create Docker Network
+        run: docker network create my_network || echo "Network already exists"
       
-      - name: Verify Docker network creation
+      - name: Verify Docker Network Creation
         run: docker network ls
 
-      - name: Cache Python packages
+      - name: Cache Python Packages
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
@@ -41,46 +40,46 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install Python version 3.9
+      - name: Install Python 3.9
         uses: actions/setup-python@v3
         with:
           python-version: "3.9"
 
-      - name: Install all dependencies
+      - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      - name: Start PostgreSQL service
+      - name: Start PostgreSQL Service
         run: |
           docker run -d \
-          --name postgres \
-          --network my_network \
-          -p 5433:5432 \
-          -e POSTGRES_USER=postgres \
-          -e POSTGRES_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
-          -e POSTGRES_DB=fastapi_test \
-          --cpus="1" \
-          --memory="1g" \
-          --health-cmd "pg_isready -U postgres" \
-          --health-interval 10s \
-          --health-timeout 10s \
-          --health-retries 10 \
-          postgres:13
+            --name postgres \
+            --network my_network \
+            -p 5433:5432 \
+            -e POSTGRES_USER=postgres \
+            -e POSTGRES_PASSWORD=${{ secrets.DATABASE_PASSWORD }} \
+            -e POSTGRES_DB=fastapi_test \
+            --cpus="1" \
+            --memory="1g" \
+            --health-cmd "pg_isready -U postgres" \
+            --health-interval 10s \
+            --health-timeout 10s \
+            --health-retries 10 \
+            postgres:13
 
-      - name: Verify PostgreSQL container status
+      - name: Verify PostgreSQL Container Status
         run: docker ps -a
 
-      - name: Update pip
+      - name: Upgrade pip
         run: python -m pip install --upgrade pip
 
-      - name: Install PostgreSQL client
+      - name: Install PostgreSQL Client
         run: sudo apt-get install -y postgresql-client
 
-      - name: Set up PostgreSQL password file
+      - name: Set Up PostgreSQL Password File
         run: |
           echo "127.0.0.1:5432:*:postgres:${{ secrets.DATABASE_PASSWORD }}" > ~/.pgpass
           chmod 0600 ~/.pgpass
 
-      - name: Create fastapi_test database
+      - name: Create Database
         run: |
           until pg_isready -h postgres -p 5432 -U postgres; do
             echo "Waiting for PostgreSQL to be ready..."
@@ -88,15 +87,15 @@ jobs:
           done
           psql -h postgres -U postgres -c "CREATE DATABASE ${DATABASE_NAME};"
 
-      - name: Test with pytest
+      - name: Run Tests with Pytest
         run: |
           pip install pytest
           pytest --disable-warnings -q
 
-      - name: Display PostgreSQL container logs
-        run: docker logs $(docker ps -a -q --filter "name=postgres")
+      - name: Display PostgreSQL Logs
+        run: docker logs $(docker ps -q --filter "name=postgres")
 
-      - name: Check PostgreSQL status
+      - name: Check PostgreSQL Status
         run: docker ps -a
 
       - name: Log in to Docker Hub
@@ -105,11 +104,11 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Set up Docker Buildx
+      - name: Set Up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Build and push Docker image
+      - name: Build and Push Docker Image
         id: docker_build
         uses: docker/build-push-action@v2
         with:
@@ -121,8 +120,8 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,src=/tmp/.buildx-cache
 
-      - name: Image digest
+      - name: Show Docker Image Digest
         run: echo ${{ steps.docker_build.outputs.digest }}
 
-      - name: Check existing Docker networks
+      - name: Check Existing Docker Networks
         run: docker network ls
