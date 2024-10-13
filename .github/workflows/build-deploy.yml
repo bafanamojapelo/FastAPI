@@ -44,11 +44,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Create Docker network
-        run: |
-          docker network ls
-          docker network create my_network || echo "Network already exists"
-
       - name: Cache Python packages
         uses: actions/cache@v3
         with:
