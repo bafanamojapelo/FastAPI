@@ -44,6 +44,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Create Docker network
+        run: docker network create my_network
+
       - name: Cache Python packages
         uses: actions/cache@v3
         with:
@@ -76,63 +79,3 @@ jobs:
           --health-timeout 10s \
           --health-retries 10 \
           postgres:13
-
-      - name: Update pip
-        run: python -m pip install --upgrade pip
-
-      - name: Install PostgreSQL client
-        run: sudo apt-get install -y postgresql-client
-
-      - name: Set up PostgreSQL password file
-        run: |
-          echo "127.0.0.1:5432:*:postgres:${{ secrets.DATABASE_PASSWORD }}" > ~/.pgpass
-          chmod 0600 ~/.pgpass
-
-      - name: Create fastapi_test database
-        run: |
-          until pg_isready -h postgres -p 5432 -U postgres; do
-            echo "Waiting for PostgreSQL to be ready..."
-            sleep 3
-          done
-          psql -h postgres -U postgres -c "CREATE DATABASE ${DATABASE_NAME};"
-
-      - name: Test with pytest
-        run: |
-          pip install pytest
-          pytest --disable-warnings -q
-
-      - name: Display PostgreSQL container logs
-        run: docker logs $(docker ps -a -q --filter "name=postgres")
-
-      - name: Check PostgreSQL status
-        run: docker ps -a
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Build and push Docker image
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          context: ./
-          file: .Dockerfile
-          builder: ${{ steps.buildx.outputs.name }}
-          push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/fastapi:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,src=/tmp/.buildx-cache
-
-      - name: Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
-
-      - name: Check existing Docker networks
-        run: docker network ls
-
-
