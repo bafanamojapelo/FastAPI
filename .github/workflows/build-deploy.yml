@@ -22,24 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 300
 
-    services:
-      postgres:
-        image: postgres:13
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-          POSTGRES_DB: fastapi_test
-        ports:
-          - 5433:5432
-        options: >-
-          --network my_network
-          --cpus="1"
-          --memory="1g"
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 10s
-          --health-timeout 10s
-          --health-retries 10
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -47,8 +29,8 @@ jobs:
       - name: Create Docker network
         run: |
           docker network create my_network || echo "Network already exists"
-
-      - name: Verify Docker network
+      
+      - name: Verify Docker network creation
         run: docker network ls
 
       - name: Cache Python packages
@@ -84,4 +66,5 @@ jobs:
           --health-retries 10 \
           postgres:13
 
-      # Additional steps go here...
+      - name: Verify PostgreSQL container status
+        run: docker ps -a
